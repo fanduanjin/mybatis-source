@@ -91,6 +91,7 @@ public class XMLMapperBuilder extends BaseBuilder {
 
   public void parse() {
     if (!configuration.isResourceLoaded(resource)) {
+      //拿到mapper.xml 中 根节点（mapper）进行解析
       configurationElement(parser.evalNode("/mapper"));
       configuration.addLoadedResource(resource);
       bindMapperForNamespace();
@@ -107,15 +108,22 @@ public class XMLMapperBuilder extends BaseBuilder {
 
   private void configurationElement(XNode context) {
     try {
+      //拿到命名id
       String namespace = context.getStringAttribute("namespace");
       if (namespace == null || namespace.equals("")) {
         throw new BuilderException("Mapper's namespace cannot be empty");
       }
       builderAssistant.setCurrentNamespace(namespace);
+      //二级缓存几乎没用 不是重点
+      //解析 cache-ref节点 二级缓存引用
       cacheRefElement(context.evalNode("cache-ref"));
+      //解析 cache节点 开启二级缓存
       cacheElement(context.evalNode("cache"));
+      //parameterMap节点解析 几乎没用
       parameterMapElement(context.evalNodes("/mapper/parameterMap"));
+      //resultMap节点解析 有用 跟
       resultMapElements(context.evalNodes("/mapper/resultMap"));
+      //sql节点解析，有用
       sqlElement(context.evalNodes("/mapper/sql"));
       buildStatementFromContext(context.evalNodes("select|insert|update|delete"));
     } catch (Exception e) {
