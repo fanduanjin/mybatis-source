@@ -131,8 +131,11 @@ public abstract class BaseExecutor implements Executor {
 
   @Override
   public <E> List<E> query(MappedStatement ms, Object parameter, RowBounds rowBounds, ResultHandler resultHandler) throws SQLException {
+    //通过mappedStatement拿到boundSql
     BoundSql boundSql = ms.getBoundSql(parameter);
+    //拿到缓存key 不是特别重要
     CacheKey key = createCacheKey(ms, parameter, rowBounds, boundSql);
+    //核心query方法
     return query(ms, parameter, rowBounds, resultHandler, key, boundSql);
  }
 
@@ -144,15 +147,19 @@ public abstract class BaseExecutor implements Executor {
       throw new ExecutorException("Executor was closed.");
     }
     if (queryStack == 0 && ms.isFlushCacheRequired()) {
+      //根据配置清空缓存 不是很重要
       clearLocalCache();
     }
     List<E> list;
     try {
       queryStack++;
+      //从一级缓存拿
       list = resultHandler == null ? (List<E>) localCache.getObject(key) : null;
       if (list != null) {
+        //StatementType 为 CALLABLE（存储过程）才走
         handleLocallyCachedOutputParameters(ms, key, parameter, boundSql);
       } else {
+        //正在jdbc 跟
         list = queryFromDatabase(ms, parameter, rowBounds, resultHandler, key, boundSql);
       }
     } finally {
@@ -319,12 +326,16 @@ public abstract class BaseExecutor implements Executor {
 
   private <E> List<E> queryFromDatabase(MappedStatement ms, Object parameter, RowBounds rowBounds, ResultHandler resultHandler, CacheKey key, BoundSql boundSql) throws SQLException {
     List<E> list;
+    //先缓存一个空值
     localCache.putObject(key, EXECUTION_PLACEHOLDER);
     try {
+      //重点方法 跟
       list = doQuery(ms, parameter, rowBounds, resultHandler, boundSql);
     } finally {
+      //查完之后情况之前那个空值
       localCache.removeObject(key);
     }
+    //又将查完的数据缓存？？？ 有点蛋疼感觉
     localCache.putObject(key, list);
     if (ms.getStatementType() == StatementType.CALLABLE) {
       localOutputParameterCache.putObject(key, parameter);
@@ -335,6 +346,7 @@ public abstract class BaseExecutor implements Executor {
   protected Connection getConnection(Log statementLog) throws SQLException {
     Connection connection = transaction.getConnection();
     if (statementLog.isDebugEnabled()) {
+      //生成代理对象
       return ConnectionLogger.newInstance(connection, statementLog, queryStack);
     } else {
       return connection;

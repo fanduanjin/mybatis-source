@@ -64,6 +64,7 @@ public final class ConnectionLogger extends BaseJdbcLogger implements Invocation
         return stmt;
       } else if ("createStatement".equals(method.getName())) {
         Statement stmt = (Statement) method.invoke(connection, params);
+        //生成statement代理对象
         stmt = StatementLogger.newInstance(stmt, statementLog, queryStack);
         return stmt;
       } else {

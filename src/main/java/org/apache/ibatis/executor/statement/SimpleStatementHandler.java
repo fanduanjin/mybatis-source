@@ -70,8 +70,11 @@ public class SimpleStatementHandler extends BaseStatementHandler {
 
   @Override
   public <E> List<E> query(Statement statement, ResultHandler resultHandler) throws SQLException {
+    //拿到sql语句
     String sql = boundSql.getSql();
+    //到数据库查数据
     statement.execute(sql);
+    //将查到的数据，反射封装为pojo
     return resultSetHandler.handleResultSets(statement);
   }
 

@@ -578,11 +578,13 @@ public class Configuration {
     } else if (ExecutorType.REUSE == executorType) {
       executor = new ReuseExecutor(this, transaction);
     } else {
+      //一般默认是simple
       executor = new SimpleExecutor(this, transaction);
     }
     if (cacheEnabled) {
       executor = new CachingExecutor(executor);
     }
+    //拦截器链 动态代理executor，最终返回代理对象
     executor = (Executor) interceptorChain.pluginAll(executor);
     return executor;
   }

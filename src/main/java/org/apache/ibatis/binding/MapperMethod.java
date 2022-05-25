@@ -43,6 +43,7 @@ import java.util.*;
  */
 public class MapperMethod {
 
+  //sql语句
   private final SqlCommand command;
   private final MethodSignature method;
 
@@ -80,7 +81,9 @@ public class MapperMethod {
         } else if (method.returnsCursor()) {
           result = executeForCursor(sqlSession, args);
         } else {
+          //拿到入参
           Object param = method.convertArgsToSqlCommandParam(args);
+          //通过sqlSession 去查询
           result = sqlSession.selectOne(command.getName(), param);
           if (method.returnsOptional() &&
               (result == null || !method.getReturnType().equals(result.getClass()))) {
@@ -221,6 +224,7 @@ public class MapperMethod {
     public SqlCommand(Configuration configuration, Class<?> mapperInterface, Method method) {
       final String methodName = method.getName();
       final Class<?> declaringClass = method.getDeclaringClass();
+      //根据接口名+方法名拿到MappedStatement
       MappedStatement ms = resolveMappedStatement(mapperInterface, methodName, declaringClass,
           configuration);
       if (ms == null) {

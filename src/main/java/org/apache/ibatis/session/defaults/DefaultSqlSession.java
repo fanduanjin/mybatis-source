@@ -144,7 +144,9 @@ public class DefaultSqlSession implements SqlSession {
   @Override
   public <E> List<E> selectList(String statement, Object parameter, RowBounds rowBounds) {
     try {
+      //从configuration对象拿到 mappedStatement
       MappedStatement ms = configuration.getMappedStatement(statement);
+      //通过executor与数据库交互，查数据，封装为pojo
       return executor.query(ms, wrapCollection(parameter), rowBounds, Executor.NO_RESULT_HANDLER);
     } catch (Exception e) {
       throw ExceptionFactory.wrapException("Error querying database.  Cause: " + e, e);

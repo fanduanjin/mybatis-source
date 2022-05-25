@@ -58,8 +58,11 @@ public class SimpleExecutor extends BaseExecutor {
     Statement stmt = null;
     try {
       Configuration configuration = ms.getConfiguration();
+      //根据mapper.xml中配置的statement 创建statementHandler 默认 STATEMENT
       StatementHandler handler = configuration.newStatementHandler(wrapper, ms, parameter, rowBounds, resultHandler, boundSql);
+      //拿到statement对象，赋值好的
       stmt = prepareStatement(handler, ms.getStatementLog());
+      //到数据库中查数据&对resultSet处理
       return handler.query(stmt, resultHandler);
     } finally {
       closeStatement(stmt);
@@ -82,8 +85,11 @@ public class SimpleExecutor extends BaseExecutor {
 
   private Statement prepareStatement(StatementHandler handler, Log statementLog) throws SQLException {
     Statement stmt;
+    //拿到connection对象，带日志功能的代理对象
     Connection connection = getConnection(statementLog);
+    //拿到statement对象
     stmt = handler.prepare(connection, transaction.getTimeout());
+    //设置执行sql语句需要的参数
     handler.parameterize(stmt);
     return stmt;
   }
